@@ -1,4 +1,4 @@
-name: Build APK
+name: Build Debug APK
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    name: Build Flutter APK
+    name: Build Flutter Debug APK
     runs-on: ubuntu-latest
 
     steps:
@@ -40,6 +40,10 @@ jobs:
     - name: Accept Android licenses
       run: yes | sdkmanager --licenses
 
+    # Create local.properties for SDK path
+    - name: Create local.properties
+      run: echo "sdk.dir=$ANDROID_HOME" > android/local.properties
+
     # Clean old builds
     - name: Clean build
       run: flutter clean
@@ -48,13 +52,13 @@ jobs:
     - name: Flutter doctor
       run: flutter doctor -v
 
-    # Build release APK
-    - name: Build APK
-      run: flutter build apk --release
+    # Build debug APK with verbose logs
+    - name: Build Debug APK
+      run: flutter build apk --debug -v
 
     # Upload APK artifact
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: ReminderApp-APK
-        path: build/app/outputs/flutter-apk/app-release.apk
+        name: ReminderApp-Debug-APK
+        path: build/app/outputs/flutter-apk/app-debug.apk
