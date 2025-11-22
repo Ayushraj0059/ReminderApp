@@ -1,4 +1,4 @@
-name: Build Debug APK
+name: Build Debug APK with Logs
 
 on:
   push:
@@ -49,17 +49,22 @@ jobs:
     - name: Clean build
       run: flutter clean
 
-    # Optional: Check environment
-    - name: Flutter doctor
-      run: flutter doctor -v
-
     # Build debug APK with verbose logs
     - name: Build Debug APK
-      run: flutter build apk --debug -v
+      run: |
+        mkdir -p build_logs
+        flutter build apk --debug -v 2>&1 | tee build_logs/build.log
 
-    # Upload APK artifact
-    - name: Upload APK
+    # Upload debug APK artifact
+    - name: Upload Debug APK
       uses: actions/upload-artifact@v4
       with:
         name: ReminderApp-Debug-APK
         path: build/app/outputs/flutter-apk/app-debug.apk
+
+    # Upload build logs artifact
+    - name: Upload build logs
+      uses: actions/upload-artifact@v4
+      with:
+        name: Flutter-Build-Logs
+        path: build_logs/build.log
