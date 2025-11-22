@@ -1,4 +1,4 @@
-name: Build Debug APK with Logs
+name: Build Debug APK
 
 on:
   push:
@@ -11,60 +11,50 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repo
-      uses: actions/checkout@v4
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
-    # Setup Java JDK
-    - name: Set up JDK 17
-      uses: actions/setup-java@v3
-      with:
-        distribution: 'temurin'
-        java-version: '17'
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
 
-    # Manual Flutter install (fixed PATH)
-    - name: Install Flutter
-      run: |
-        git clone https://github.com/flutter/flutter.git -b stable --depth 1 $HOME/flutter
-        export PATH="$HOME/flutter/bin:$PATH"
-        flutter doctor -v
+      - name: Install Flutter
+        run: |
+          git clone https://github.com/flutter/flutter.git -b 3.13.4 --depth 1 $HOME/flutter
+          export PATH="$HOME/flutter/bin:$PATH"
+          flutter doctor -v
 
-    # Install Flutter dependencies
-    - name: Install dependencies
-      run: flutter pub get
+      - name: Install dependencies
+        run: flutter pub get
 
-    # Setup Android SDK and build tools
-    - name: Install Android SDK packages
-      run: |
-        yes | sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2"
+      - name: Install Android SDK packages
+        run: |
+          yes | sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2"
 
-    # Accept licenses
-    - name: Accept Android licenses
-      run: yes | sdkmanager --licenses
+      - name: Accept Android licenses
+        run: yes | sdkmanager --licenses
 
-    # Create local.properties for SDK path
-    - name: Create local.properties
-      run: echo "sdk.dir=$ANDROID_HOME" > android/local.properties
+      - name: Create local.properties
+        run: echo "sdk.dir=$ANDROID_HOME" > android/local.properties
 
-    # Clean old builds
-    - name: Clean build
-      run: flutter clean
+      - name: Clean build
+        run: flutter clean
 
-    # Build debug APK with verbose logs
-    - name: Build Debug APK
-      run: |
-        mkdir -p build_logs
-        flutter build apk --debug -v 2>&1 | tee build_logs/build.log
+      - name: Build Debug APK with verbose logs
+        run: |
+          mkdir -p build_logs
+          flutter build apk --debug -v 2>&1 | tee build_logs/build.log
 
-    # Upload debug APK artifact
-    - name: Upload Debug APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: ReminderApp-Debug-APK
-        path: build/app/outputs/flutter-apk/app-debug.apk
+      - name: Upload Debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: ReminderApp-Debug-APK
+          path: build/app/outputs/flutter-apk/app-debug.apk
 
-    # Upload build logs artifact
-    - name: Upload build logs
-      uses: actions/upload-artifact@v4
-      with:
-        name: Flutter-Build-Logs
-        path: build_logs/build.log
+      - name: Upload build logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: Flutter-Build-Logs
+          path: build_logs/build.log
