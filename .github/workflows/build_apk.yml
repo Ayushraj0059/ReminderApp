@@ -1,4 +1,4 @@
-name: Build Debug APK (All-in-One)
+name: Build Debug APK (FINAL ALL-IN-ONE)
 
 on:
   push:
@@ -20,29 +20,38 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Install Android SDK packages
+      - name: Install Flutter, Android SDK, dependencies and build APK
         run: |
-          sudo apt-get update
-          sudo apt-get install -y unzip xz-utils libglu1-mesa openjdk-17-jdk
-          yes | sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2"
-          yes | sdkmanager --licenses
-
-      - name: Install Flutter, dependencies and build APK (All-in-One)
-        run: |
-          # Clone Flutter
+          # --- Install Flutter ---
           git clone https://github.com/flutter/flutter.git -b 3.13.4 --depth 1 $HOME/flutter
+          echo "$HOME/flutter/bin" >> $GITHUB_PATH
           export PATH="$HOME/flutter/bin:$PATH"
-
-          # Check Flutter installation
           flutter doctor -v
 
-          # Install dependencies
+          # --- Install Android SDK command line tools ---
+          mkdir -p $HOME/android-sdk
+          cd $HOME/android-sdk
+          wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O cmdline-tools.zip
+          unzip cmdline-tools.zip
+          mkdir -p cmdline-tools/latest
+          mv cmdline-tools/* cmdline-tools/latest/
+          export ANDROID_SDK_ROOT=$HOME/android-sdk
+          export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH
+
+          # --- Accept licenses and install required packages ---
+          yes | sdkmanager --licenses
+          sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2"
+
+          # --- Go back to repo root ---
+          cd $GITHUB_WORKSPACE
+
+          # --- Install dependencies ---
           flutter pub get
 
-          # Clean previous builds
+          # --- Clean build ---
           flutter clean
 
-          # Build debug APK
+          # --- Build debug APK ---
           mkdir -p build_logs
           flutter build apk --debug -v 2>&1 | tee build_logs/build.log
 
