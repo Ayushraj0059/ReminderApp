@@ -1,0 +1,19 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+package="com.example.reminderapp">
+
+
+<uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+
+
+<application
+android:label="ReminderApp"
+android:requestLegacyExternalStorage="true"
+android:icon="@mipmap/ic_launcher">
+
+
+<!-- Required for android_alarm_manager_plus -->
+<service android:name="dev.fluttercommunity.plus.androidalarmmanager.AlarmService" android:exported="false" />
+
+
+</application>
+</manifest>
